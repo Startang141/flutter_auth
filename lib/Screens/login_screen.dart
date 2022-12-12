@@ -26,7 +26,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final String _deviceName = 'handphone';
 
   loginPressed() async {
-    if (emailTxt.text.isNotEmpty && passwordTxt.text.isNotEmpty) {
+    bool emailValid = RegExp(
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(emailTxt.text);
+    if (emailValid && passwordTxt != null) {
       http.Response response = await AuthServices.login(
           emailTxt.text, passwordTxt.text, _deviceName);
       Map responseMap = jsonDecode(response.body);
