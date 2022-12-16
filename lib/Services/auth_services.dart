@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutterapp/Services/globals.dart';
+import 'package:flutterapp/components/category.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -96,5 +97,61 @@ class AuthServices {
     const key = 'token';
     final value = prefs.get(key) ?? 0;
     print('read : $value');
+  }
+
+  Future<http.Response> requestAddCategory(String name) async {
+    var url = Uri.parse(baseURL + 'category');
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Accept": "application/json",
+        "Access-Control_Allow_Origin": "*",
+        "Authorization": "Bearer $token",
+      },
+      body: {
+        "name": name,
+      },
+    );
+    return response;
+  }
+
+  Future<http.Response> requestDelete(Category category) async {
+    var url = Uri.parse(baseURL + 'category/${category.id}');
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.delete(
+      url,
+      headers: {
+        "Accept": "application/json",
+        "Access-Control_Allow_Origin": "*",
+        "Authorization": "Bearer $token",
+      },
+    );
+    return response;
+  }
+
+  Future<http.Response> requestUpdate(
+      Category category, String newCategory) async {
+    var url = Uri.parse(baseURL + 'category/${category.id}');
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.put(
+      url,
+      headers: {
+        "Accept": "application/json",
+        "Access-Control_Allow_Origin": "*",
+        "Authorization": "Bearer $token",
+      },
+      body: {
+        "name": newCategory,
+      },
+    );
+    return response;
   }
 }
