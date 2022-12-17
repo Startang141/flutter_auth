@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutterapp/Screens/add_screen.dart';
+import 'package:flutterapp/Screens/edit_screen.dart';
 import 'package:flutterapp/Screens/login_screen.dart';
-import 'package:flutterapp/Services/category_services.dart';
 import 'package:flutterapp/components/category.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,7 +20,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreen extends State<HomeScreen> {
   List listCategory = [];
   String name = '';
-  final TextEditingController addCategoryTxt = TextEditingController();
 
   getKategori() async {
     final response = await AuthServices().getKategori();
@@ -34,13 +35,6 @@ class _HomeScreen extends State<HomeScreen> {
     });
   }
 
-  doAddCategory() async {
-    final name = addCategoryTxt.text;
-    final response = await CategoryService().addCategory(name);
-    print(response.body);
-    Navigator.pushNamed(context, "/");
-  }
-
   getUser() async {
     final sharedPref = await SharedPreferences.getInstance();
     setState(() {
@@ -48,6 +42,12 @@ class _HomeScreen extends State<HomeScreen> {
       final value = sharedPref.get(key);
       name = '$value';
     });
+  }
+
+  deleteCategory(Category category) async {
+    final response = await AuthServices().requestDelete(category);
+    listCategory.clear();
+    getKategori();
   }
 
   logOut() async {
@@ -76,7 +76,6 @@ class _HomeScreen extends State<HomeScreen> {
   @override
   void initState() {
     getUser();
-    doAddCategory();
     super.initState();
     getKategori();
   }
@@ -98,7 +97,7 @@ class _HomeScreen extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout_outlined),
+            icon: const Icon(Icons.logout_outlined),
             onPressed: () {
               logOut();
             },
@@ -120,36 +119,43 @@ class _HomeScreen extends State<HomeScreen> {
               child: Container(
                 margin: const EdgeInsets.fromLTRB(16, 0, 0, 0),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 48.0,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hello, $name',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24,
-                            ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hello, $name',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
                           ),
-                          const SizedBox(
-                            height: 4,
+                        ),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        const Text(
+                          'Mari Menjelajah',
+                          style: TextStyle(
+                            color: Color.fromARGB(196, 255, 255, 255),
+                            fontSize: 16,
                           ),
-                          const Text(
-                            'Mari Menjelajah',
-                            style: TextStyle(
-                              color: Color.fromARGB(196, 255, 255, 255),
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
+                    ElevatedButton.icon(
+                      icon: Icon(Icons.add),
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AddScreen()));
+                      },
+                      label: const Text('Tambah'),
+                    )
                   ],
                 ),
               ),
@@ -178,26 +184,6 @@ class _HomeScreen extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    Container(
-                      margin: const EdgeInsets.all(16),
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          hintText: "Input Your Categories Name",
-                          labelText: "Add Categories",
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(5.0)),
-                          suffixIcon: Container(
-                            margin: const EdgeInsets.fromLTRB(0, 8, 12, 8),
-                            child: ElevatedButton(
-                              child: const Text("Add"),
-                              onPressed: () {
-                                doAddCategory();
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
                     Expanded(
                       child: Container(
                         decoration: const BoxDecoration(
@@ -211,37 +197,34 @@ class _HomeScreen extends State<HomeScreen> {
                             itemCount: listCategory.length,
                             itemBuilder: (context, index) {
                               var kategori = listCategory[index];
-                              return Dismissible(
-                                key: UniqueKey(),
-                                background: Container(
-                                  color: Colors.yellowAccent,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(15),
-                                    child: Row(
-                                      children: const [
-                                        Icon(
-                                          Icons.create_rounded,
-                                          color: Colors.white,
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                secondaryBackground: Container(
-                                  color: Colors.redAccent,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(15),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: const [
-                                        Icon(
-                                          Icons.delete,
-                                          color: Colors.white,
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
+                              return Slidable(
+                                endActionPane: ActionPane(
+                                    motion: const DrawerMotion(),
+                                    children: [
+                                      SlidableAction(
+                                        onPressed: (context) async {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: ((context) =>
+                                                      EditScreen(
+                                                        category: kategori,
+                                                      ))));
+                                        },
+                                        backgroundColor:
+                                            const Color(0xff6777ef),
+                                        foregroundColor: Colors.white,
+                                        icon: Icons.mode_edit_outlined,
+                                      ),
+                                      SlidableAction(
+                                        onPressed: (context) {
+                                          deleteCategory(kategori);
+                                        },
+                                        backgroundColor: Colors.red,
+                                        foregroundColor: Colors.white,
+                                        icon: Icons.delete_forever_rounded,
+                                      )
+                                    ]),
                                 child: Container(
                                   margin:
                                       const EdgeInsets.fromLTRB(10, 5, 10, 5),
