@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterapp/Services/auth_services.dart';
 
 class AddScreen extends StatefulWidget {
   const AddScreen({Key? key}) : super(key: key);
@@ -8,6 +9,14 @@ class AddScreen extends StatefulWidget {
 }
 
 class _AddScreen extends State<AddScreen> {
+  final TextEditingController categoryName = TextEditingController();
+
+  Future doAddCategory(String name) async {
+    final response = await AuthServices().requestAddCategory(name);
+    print(response.body);
+    Navigator.pushNamed(context, "/");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,6 +36,7 @@ class _AddScreen extends State<AddScreen> {
       body: Container(
         margin: const EdgeInsets.all(16),
         child: TextFormField(
+          controller: categoryName,
           decoration: InputDecoration(
             hintText: "Input Your Categories Name",
             labelText: "Add Categories",
@@ -36,8 +46,8 @@ class _AddScreen extends State<AddScreen> {
               margin: const EdgeInsets.fromLTRB(0, 8, 12, 8),
               child: ElevatedButton(
                 child: const Text("Add"),
-                onPressed: () {
-                  
+                onPressed: () async {
+                  await doAddCategory(categoryName.text);
                 },
               ),
             ),
