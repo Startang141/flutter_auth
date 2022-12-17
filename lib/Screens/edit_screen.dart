@@ -1,13 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutterapp/Services/auth_services.dart';
+import 'package:flutterapp/components/category.dart';
 
 class EditScreen extends StatefulWidget {
-  const EditScreen({Key? key}) : super(key: key);
+  Category category;
+  EditScreen({Key? key, required this.category}) : super(key: key);
 
   @override
   State<EditScreen> createState() => _EditScreen();
 }
 
 class _EditScreen extends State<EditScreen> {
+  final TextEditingController editCategoryTxt = TextEditingController();
+
+  doEditCategory() async {
+    final name = editCategoryTxt.text;
+    final response = await AuthServices().requestUpdate(widget.category!, name);
+    print(response.body);
+    Navigator.pushNamed(context, "/");
+  }
+
+  @override
+  void inistate() {
+    super.initState();
+    editCategoryTxt.text = widget.category!.name;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,6 +45,7 @@ class _EditScreen extends State<EditScreen> {
       body: Container(
         margin: const EdgeInsets.all(16),
         child: TextFormField(
+          controller: editCategoryTxt,
           decoration: InputDecoration(
             hintText: "Edit Your Categories Name",
             labelText: "Edit Categories",
@@ -36,7 +55,9 @@ class _EditScreen extends State<EditScreen> {
               margin: const EdgeInsets.fromLTRB(0, 8, 12, 8),
               child: ElevatedButton(
                 child: const Text("Edit"),
-                onPressed: () {},
+                onPressed: () {
+                  doEditCategory();
+                },
               ),
             ),
           ),
