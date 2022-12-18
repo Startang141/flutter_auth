@@ -206,10 +206,11 @@ class _HomeScreen extends State<HomeScreen> {
                                           Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                  builder: ((context) =>
+                                                  builder: (context) =>
                                                       EditScreen(
-                                                        category: kategori,
-                                                      ))));
+                                                        category:
+                                                            listCategory[index],
+                                                      )));
                                         },
                                         backgroundColor:
                                             const Color(0xff6777ef),
